@@ -1,0 +1,12 @@
+node_modules
+dist
+dev-dist
+.DS_Store
+.vscode
+.idea
+*.log
+.env
+.env.local
+.env.*.local
+.vercel
+.claude/settings.local.json
