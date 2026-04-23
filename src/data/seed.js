@@ -17,6 +17,7 @@ export const initialData = {
     { id: 15, name: 'Sensa' },
     { id: 16, name: 'Top Sundae' },
     { id: 17, name: 'Disney' },
+    { id: 19, name: 'Regionais' },
     { id: 18, name: 'Espaços Vazios' },
   ],
   products: [
@@ -71,6 +72,8 @@ export const initialData = {
     { id: 34, name: 'UVA', type: 'Picolé', categoryId: 8, count: 0 },
     { id: 35, name: 'MORANGO AGUA', type: 'Picolé', categoryId: 8, count: 0 },
     { id: 36, name: 'ABACAXI', type: 'Picolé', categoryId: 8, count: 0 },
+    { id: 89, name: 'MANGA', type: 'Picolé', categoryId: 8, count: 0 },
+    { id: 90, name: 'GOIABA', type: 'Picolé', categoryId: 8, count: 0 },
 
     // Hello Kitty
     { id: 37, name: 'TUTTI FRUTTI', type: 'Picolé', categoryId: 9, count: 0 },
@@ -135,6 +138,13 @@ export const initialData = {
     { id: 80, name: 'JESSIE', type: 'Picolé', categoryId: 17, count: 0 },
     { id: 81, name: 'GWEN STACE', type: 'Picolé', categoryId: 17, count: 0 },
     { id: 82, name: 'HOMEM ARANHA', type: 'Picolé', categoryId: 17, count: 0 },
+
+    // Regionais
+    { id: 91, name: 'TAPIOCA', type: 'Picolé', categoryId: 19, count: 0 },
+    { id: 92, name: 'GRAVIOLA', type: 'Picolé', categoryId: 19, count: 0 },
+    { id: 93, name: 'CAJÁ', type: 'Picolé', categoryId: 19, count: 0 },
+    { id: 94, name: 'CAJU', type: 'Picolé', categoryId: 19, count: 0 },
+    { id: 95, name: 'CUPUAÇU', type: 'Picolé', categoryId: 19, count: 0 },
 
     // Espaços Vazios
     { id: 83, name: 'Caixa Vazia', type: 'Picolé', categoryId: 18, count: 0 },
