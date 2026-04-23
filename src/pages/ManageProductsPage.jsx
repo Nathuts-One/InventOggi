@@ -1,50 +1,67 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus, Pencil, Trash2, Check, X, ArrowLeft } from 'lucide-react'
 import { ConfirmModal } from '../components/ConfirmModal'
 
-export function ManageProductsPage({ inventory, category, onBack }) {
+export function ManageProductsPage({ inventory, onBack }) {
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState('')
+  const [newCategoryId, setNewCategoryId] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editingName, setEditingName] = useState('')
   const [editingType, setEditingType] = useState('')
+  const [editingCategoryId, setEditingCategoryId] = useState('')
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [filterCategoryId, setFilterCategoryId] = useState('all')
 
-  const products = inventory.productsByCategory(category.id)
   const typeSuggestions = inventory.allKnownTypes
-  const datalistId = `types-${category.id}`
+  const datalistId = 'product-types'
+
+  const categoryById = useMemo(() => {
+    const map = new Map()
+    inventory.categories.forEach(c => map.set(c.id, c))
+    return map
+  }, [inventory.categories])
+
+  const filteredProducts =
+    filterCategoryId === 'all'
+      ? inventory.products
+      : inventory.products.filter(p => p.categoryId === Number(filterCategoryId))
 
   function handleAdd() {
     const name = newName.trim()
-    if (!name) return
-    inventory.addProduct(name, category.id, newType.trim())
+    const categoryId = Number(newCategoryId)
+    if (!name || !categoryId) return
+    inventory.addProduct(name, categoryId, newType.trim())
     setNewName('')
     setNewType('')
+    // Keep newCategoryId to make adding multiple in same category easier
   }
 
   function startEdit(p) {
     setEditingId(p.id)
     setEditingName(p.name)
     setEditingType(p.type || '')
+    setEditingCategoryId(String(p.categoryId))
   }
 
   function saveEdit() {
     const name = editingName.trim()
-    if (name) {
+    const categoryId = Number(editingCategoryId)
+    if (name && categoryId) {
       inventory.updateProduct(editingId, {
         name,
         type: editingType.trim(),
+        categoryId,
       })
     }
-    setEditingId(null)
-    setEditingName('')
-    setEditingType('')
+    cancelEdit()
   }
 
   function cancelEdit() {
     setEditingId(null)
     setEditingName('')
     setEditingType('')
+    setEditingCategoryId('')
   }
 
   function confirmDelete() {
@@ -66,10 +83,7 @@ export function ManageProductsPage({ inventory, category, onBack }) {
         >
           <ArrowLeft size={22} strokeWidth={2} />
         </button>
-        <div className="flex-1 text-center">
-          <p className="text-gray-400 text-xs uppercase tracking-wider">Produtos</p>
-          <h1 className="text-xl font-bold truncate px-2">{category.name}</h1>
-        </div>
+        <h1 className="flex-1 text-center text-xl font-bold">Gerenciar Produtos</h1>
         <div className="w-10" />
       </header>
 
@@ -86,7 +100,7 @@ export function ManageProductsPage({ inventory, category, onBack }) {
           />
           <button
             onClick={handleAdd}
-            disabled={!newName.trim()}
+            disabled={!newName.trim() || !newCategoryId}
             className="p-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:bg-gray-400 transition-colors"
             aria-label="Adicionar"
             title="Adicionar"
@@ -94,15 +108,29 @@ export function ManageProductsPage({ inventory, category, onBack }) {
             <Plus size={22} strokeWidth={2} />
           </button>
         </div>
-        <input
-          type="text"
-          value={newType}
-          onChange={e => setNewType(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          list={datalistId}
-          placeholder="Tipo (opcional) — ex: Picolé, Pote 2L"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500 text-sm"
-        />
+        <div className="flex gap-2">
+          <select
+            value={newCategoryId}
+            onChange={e => setNewCategoryId(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500 text-sm bg-white"
+          >
+            <option value="">Selecione a categoria...</option>
+            {inventory.categories.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            value={newType}
+            onChange={e => setNewType(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAdd()}
+            list={datalistId}
+            placeholder="Tipo (opcional)"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500 text-sm"
+          />
+        </div>
         <datalist id={datalistId}>
           {typeSuggestions.map(t => (
             <option key={t} value={t} />
@@ -110,16 +138,36 @@ export function ManageProductsPage({ inventory, category, onBack }) {
         </datalist>
       </div>
 
+      {/* Category filter */}
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2">
+        <select
+          value={filterCategoryId}
+          onChange={e => setFilterCategoryId(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500 text-sm bg-white"
+        >
+          <option value="all">Todas as categorias ({inventory.products.length})</option>
+          {inventory.categories.map(c => {
+            const count = inventory.productCountByCategory(c.id)
+            return (
+              <option key={c.id} value={c.id}>
+                {c.name} ({count})
+              </option>
+            )
+          })}
+        </select>
+      </div>
+
       {/* List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {products.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500 text-center">Nenhum produto nesta categoria.<br/>Adicione o primeiro acima.</p>
+            <p className="text-gray-500 text-center">Nenhum produto.</p>
           </div>
         ) : (
-          products.map(p => {
+          filteredProducts.map(p => {
             const isActive = p.active !== false
             const isEditing = editingId === p.id
+            const categoryName = categoryById.get(p.categoryId)?.name || '—'
 
             return (
               <div
@@ -142,6 +190,17 @@ export function ManageProductsPage({ inventory, category, onBack }) {
                         autoFocus
                         className="px-2 py-1 border border-gray-400 rounded focus:outline-none focus:border-gray-600"
                       />
+                      <select
+                        value={editingCategoryId}
+                        onChange={e => setEditingCategoryId(e.target.value)}
+                        className="px-2 py-1 border border-gray-400 rounded focus:outline-none focus:border-gray-600 text-sm bg-white"
+                      >
+                        {inventory.categories.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
                       <input
                         type="text"
                         value={editingType}
@@ -176,8 +235,9 @@ export function ManageProductsPage({ inventory, category, onBack }) {
                       <p className={`font-semibold truncate ${isActive ? 'text-gray-900' : 'text-gray-500'}`}>
                         {p.name}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {p.type || 'sem tipo'}
+                      <p className="text-xs text-gray-500 truncate">
+                        {categoryName}
+                        {p.type && ` • ${p.type}`}
                         {!isActive && ' • inativo'}
                       </p>
                     </div>
