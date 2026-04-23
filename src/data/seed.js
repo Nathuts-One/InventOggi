@@ -64,6 +64,8 @@ export const initialData = {
     { id: 28, name: 'LT. CONDENSADO', type: 'Picolé', categoryId: 7, count: 0 },
     { id: 29, name: 'ACHOCOLATADO', type: 'Picolé', categoryId: 7, count: 0 },
     { id: 30, name: 'IOGURTE', type: 'Picolé', categoryId: 7, count: 0 },
+    { id: 96, name: 'TROPICAL', type: 'Pote 2L', categoryId: 7, count: 0 },
+    { id: 97, name: 'YOGO', type: 'Pote 2L', categoryId: 7, count: 0 },
 
     // Frutos
     { id: 31, name: 'ACAI', type: 'Picolé', categoryId: 8, count: 0 },
@@ -80,6 +82,8 @@ export const initialData = {
     { id: 38, name: 'GROSELHA', type: 'Picolé', categoryId: 9, count: 0 },
     { id: 39, name: 'PINTA LINGUA', type: 'Picolé', categoryId: 9, count: 0 },
     { id: 40, name: 'KIWI', type: 'Picolé', categoryId: 9, count: 0 },
+    { id: 98, name: 'BIJ./BRIGADEIRO', type: 'Pote 2L', categoryId: 9, count: 0 },
+    { id: 99, name: 'LEITE COND./MORANGO', type: 'Pote 2L', categoryId: 9, count: 0 },
 
     // Duo
     { id: 41, name: 'CHOCOLATE', type: 'Pote 1,5L', categoryId: 10, count: 0 },
