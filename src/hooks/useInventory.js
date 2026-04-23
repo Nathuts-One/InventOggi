@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { initialData } from '../data/seed'
 
-const STORAGE_KEY = 'inventory-flow-data-v4'
+const STORAGE_KEY = 'inventory-flow-data-v5'
 
 export function useInventory() {
   const [categories, setCategories] = useState([])
