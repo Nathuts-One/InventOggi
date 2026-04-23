@@ -1,12 +1,28 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Check, X, ArrowLeft } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, ArrowLeft, ChevronRight } from 'lucide-react'
 import { ConfirmModal } from '../components/ConfirmModal'
+import { ManageProductsPage } from './ManageProductsPage'
 
 export function ManagePage({ inventory, onBack }) {
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editingName, setEditingName] = useState('')
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null)
+
+  const selectedCategory = selectedCategoryId
+    ? inventory.categories.find(c => c.id === selectedCategoryId)
+    : null
+
+  if (selectedCategory) {
+    return (
+      <ManageProductsPage
+        inventory={inventory}
+        category={selectedCategory}
+        onBack={() => setSelectedCategoryId(null)}
+      />
+    )
+  }
 
   function handleAdd() {
     const name = newName.trim()
@@ -124,15 +140,22 @@ export function ManagePage({ inventory, onBack }) {
                 </>
               ) : (
                 <>
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-semibold truncate ${isActive ? 'text-gray-900' : 'text-gray-500'}`}>
-                      {cat.name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {productCount} produto{productCount !== 1 ? 's' : ''}
-                      {!isActive && ' • inativa'}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => setSelectedCategoryId(cat.id)}
+                    className="flex-1 min-w-0 flex items-center gap-2 text-left hover:bg-gray-50 -m-1 p-1 rounded"
+                    aria-label={`Abrir produtos de ${cat.name}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-semibold truncate ${isActive ? 'text-gray-900' : 'text-gray-500'}`}>
+                        {cat.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {productCount} produto{productCount !== 1 ? 's' : ''}
+                        {!isActive && ' • inativa'}
+                      </p>
+                    </div>
+                    <ChevronRight size={18} className="text-gray-400 flex-shrink-0" />
+                  </button>
                   <button
                     onClick={() => inventory.toggleCategoryActive(cat.id)}
                     role="switch"

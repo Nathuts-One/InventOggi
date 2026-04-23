@@ -15,13 +15,11 @@ export function useInventory() {
     if (stored) {
       try {
         const data = JSON.parse(stored)
-        // Migration: ensure every category has `active` (default true for older storage)
-        const migratedCategories = data.categories.map(c => ({
-          active: true,
-          ...c,
-        }))
+        // Migration: ensure every category and product has `active` (default true)
+        const migratedCategories = data.categories.map(c => ({ active: true, ...c }))
+        const migratedProducts = data.products.map(p => ({ active: true, ...p }))
         setCategories(migratedCategories)
-        setProducts(data.products)
+        setProducts(migratedProducts)
       } catch {
         loadDefault()
       }
@@ -91,27 +89,45 @@ export function useInventory() {
     setProducts(products.filter(p => p.categoryId !== id))
   }
 
-  function addProduct(name, categoryId) {
+  function addProduct(name, categoryId, type = '') {
     const newId = Math.max(...products.map(p => p.id), 0) + 1
-    setProducts([
-      ...products,
-      { id: newId, name, categoryId, count: 0 },
-    ])
+    const product = { id: newId, name, categoryId, count: 0, active: true }
+    if (type) product.type = type
+    setProducts([...products, product])
   }
 
-  function updateProduct(id, name) {
-    setProducts(products.map(p => (p.id === id ? { ...p, name } : p)))
+  function updateProduct(id, updates) {
+    setProducts(
+      products.map(p => {
+        if (p.id !== id) return p
+        const next = { ...p, ...updates }
+        // Empty string type means "no type"
+        if ('type' in updates && !updates.type) delete next.type
+        return next
+      })
+    )
+  }
+
+  function toggleProductActive(id) {
+    setProducts(
+      products.map(p =>
+        p.id === id ? { ...p, active: !(p.active ?? true) } : p
+      )
+    )
   }
 
   function deleteProduct(id) {
     setProducts(products.filter(p => p.id !== id))
   }
 
-  // Active categories only — these drive what's visible in Count/Report
-  const activeCategoryIds = new Set(
-    categories.filter(c => c.active !== false).map(c => c.id)
+  // Active categories only — drive what's visible in Count/Report
+  const activeCategories = categories.filter(c => c.active !== false)
+  const activeCategoryIds = new Set(activeCategories.map(c => c.id))
+
+  // Visible = in an active category AND product itself is active
+  const visibleProducts = products.filter(
+    p => activeCategoryIds.has(p.categoryId) && p.active !== false
   )
-  const visibleProducts = products.filter(p => activeCategoryIds.has(p.categoryId))
 
   // Types are derived from visible products only
   const allTypes = [...new Set(visibleProducts.map(p => p.type).filter(Boolean))].sort()
@@ -143,30 +159,35 @@ export function useInventory() {
     return matchesSearch && matchesType
   })
 
-  // Active categories (for Count/Report), in the original order
-  const activeCategories = categories.filter(c => c.active !== false)
-
-  // Get categories to display in Count (active + has matching filtered products)
+  // Categories to display in Count (active + has matching filtered products)
   const visibleCategories = activeCategories.filter(cat =>
     filteredProducts.some(p => p.categoryId === cat.id)
   )
 
-  // Total only counts products in active categories
+  // Total only counts products in active categories + active products
   const totalCount = visibleProducts.reduce((sum, p) => sum + p.count, 0)
 
-  // Helper: count products per category (any, including inactive) — used by Manage UI
+  // Helpers for Manage UI
   const productCountByCategory = (id) =>
     products.filter(p => p.categoryId === id).length
+
+  const productsByCategory = (id) =>
+    products.filter(p => p.categoryId === id)
+
+  // All types defined across all products (for datalist suggestions in Manage)
+  const allKnownTypes = [...new Set(products.map(p => p.type).filter(Boolean))].sort()
 
   return {
     categories,
     activeCategories,
     products,
+    visibleProducts,
     filteredProducts,
     visibleCategories,
     searchTerm,
     setSearchTerm,
     allTypes,
+    allKnownTypes,
     selectedTypes: effectiveSelectedTypes,
     toggleType,
     selectAllTypes,
@@ -182,8 +203,10 @@ export function useInventory() {
     deleteCategory,
     addProduct,
     updateProduct,
+    toggleProductActive,
     deleteProduct,
     loadDefault,
     productCountByCategory,
+    productsByCategory,
   }
 }
