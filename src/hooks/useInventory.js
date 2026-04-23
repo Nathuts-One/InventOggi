@@ -15,7 +15,12 @@ export function useInventory() {
     if (stored) {
       try {
         const data = JSON.parse(stored)
-        setCategories(data.categories)
+        // Migration: ensure every category has `active` (default true for older storage)
+        const migratedCategories = data.categories.map(c => ({
+          active: true,
+          ...c,
+        }))
+        setCategories(migratedCategories)
         setProducts(data.products)
       } catch {
         loadDefault()
@@ -66,11 +71,19 @@ export function useInventory() {
 
   function addCategory(name) {
     const newId = Math.max(...categories.map(c => c.id), 0) + 1
-    setCategories([...categories, { id: newId, name }])
+    setCategories([...categories, { id: newId, name, active: true }])
   }
 
   function updateCategory(id, name) {
     setCategories(categories.map(c => (c.id === id ? { ...c, name } : c)))
+  }
+
+  function toggleCategoryActive(id) {
+    setCategories(
+      categories.map(c =>
+        c.id === id ? { ...c, active: !(c.active ?? true) } : c
+      )
+    )
   }
 
   function deleteCategory(id) {
@@ -94,8 +107,14 @@ export function useInventory() {
     setProducts(products.filter(p => p.id !== id))
   }
 
-  // Extract all unique types from products
-  const allTypes = [...new Set(products.map(p => p.type).filter(Boolean))].sort()
+  // Active categories only — these drive what's visible in Count/Report
+  const activeCategoryIds = new Set(
+    categories.filter(c => c.active !== false).map(c => c.id)
+  )
+  const visibleProducts = products.filter(p => activeCategoryIds.has(p.categoryId))
+
+  // Types are derived from visible products only
+  const allTypes = [...new Set(visibleProducts.map(p => p.type).filter(Boolean))].sort()
 
   // Effective selected types: if null (default), all are selected
   const effectiveSelectedTypes = selectedTypes === null ? allTypes : selectedTypes
@@ -117,23 +136,31 @@ export function useInventory() {
     setSelectedTypes([])
   }
 
-  // Filter products by search term and type
-  const filteredProducts = products.filter(p => {
+  // Filter visible products by search term and type
+  const filteredProducts = visibleProducts.filter(p => {
     const matchesSearch = !searchTerm.trim() || p.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = !p.type || effectiveSelectedTypes.includes(p.type)
     return matchesSearch && matchesType
   })
 
-  // Get categories to display (only those with products in filtered list)
-  const visibleCategories = categories.filter(cat =>
+  // Active categories (for Count/Report), in the original order
+  const activeCategories = categories.filter(c => c.active !== false)
+
+  // Get categories to display in Count (active + has matching filtered products)
+  const visibleCategories = activeCategories.filter(cat =>
     filteredProducts.some(p => p.categoryId === cat.id)
   )
 
-  // Get total count
-  const totalCount = products.reduce((sum, p) => sum + p.count, 0)
+  // Total only counts products in active categories
+  const totalCount = visibleProducts.reduce((sum, p) => sum + p.count, 0)
+
+  // Helper: count products per category (any, including inactive) — used by Manage UI
+  const productCountByCategory = (id) =>
+    products.filter(p => p.categoryId === id).length
 
   return {
     categories,
+    activeCategories,
     products,
     filteredProducts,
     visibleCategories,
@@ -151,10 +178,12 @@ export function useInventory() {
     clearInventory,
     addCategory,
     updateCategory,
+    toggleCategoryActive,
     deleteCategory,
     addProduct,
     updateProduct,
     deleteProduct,
     loadDefault,
+    productCountByCategory,
   }
 }

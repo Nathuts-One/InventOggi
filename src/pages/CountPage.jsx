@@ -6,7 +6,7 @@ import { CategoryGroup } from '../components/CategoryGroup'
 import { ConfirmModal } from '../components/ConfirmModal'
 import { TypeFilter } from '../components/TypeFilter'
 
-export function CountPage({ inventory, onShowReport }) {
+export function CountPage({ inventory, onShowReport, onShowManage }) {
   const [showClearModal, setShowClearModal] = useState(false)
   const [openCategories, setOpenCategories] = useState({})
 
@@ -44,7 +44,11 @@ export function CountPage({ inventory, onShowReport }) {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      <Header totalCount={inventory.totalCount} onClearInventory={handleClear} />
+      <Header
+        totalCount={inventory.totalCount}
+        onClearInventory={handleClear}
+        onManage={onShowManage}
+      />
 
       <SearchBar
         searchTerm={inventory.searchTerm}

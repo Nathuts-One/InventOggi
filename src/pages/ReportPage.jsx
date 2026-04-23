@@ -3,8 +3,8 @@ export function ReportPage({ inventory, onBackToCount }) {
   const dateStr = now.toLocaleDateString('pt-BR')
   const timeStr = now.toLocaleTimeString('pt-BR')
 
-  // Group products by category for report
-  const reportData = inventory.categories.map(cat => ({
+  // Group products by category for report (active categories only)
+  const reportData = inventory.activeCategories.map(cat => ({
     category: cat,
     products: inventory.products.filter(p => p.categoryId === cat.id),
   }))
