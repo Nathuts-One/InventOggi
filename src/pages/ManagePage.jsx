@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Check, X, Eye, EyeOff } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, ArrowLeft } from 'lucide-react'
 import { ConfirmModal } from '../components/ConfirmModal'
 
 export function ManagePage({ inventory, onBack }) {
@@ -47,12 +47,14 @@ export function ManagePage({ inventory, onBack }) {
       <header className="bg-gray-800 text-white p-4 shadow-md flex items-center">
         <button
           onClick={onBack}
-          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-semibold"
+          className="p-2 text-gray-100 hover:bg-gray-700 rounded-lg transition-colors"
+          aria-label="Voltar"
+          title="Voltar"
         >
-          Voltar
+          <ArrowLeft size={22} strokeWidth={2} />
         </button>
         <h1 className="flex-1 text-center text-xl font-bold">Gerenciar Categorias</h1>
-        <div className="w-16" />
+        <div className="w-10" />
       </header>
 
       {/* Add new */}
@@ -69,10 +71,11 @@ export function ManagePage({ inventory, onBack }) {
           <button
             onClick={handleAdd}
             disabled={!newName.trim()}
-            className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:bg-gray-400 transition-colors flex items-center gap-1"
+            className="p-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:bg-gray-400 transition-colors"
+            aria-label="Adicionar"
+            title="Adicionar"
           >
-            <Plus size={18} />
-            Adicionar
+            <Plus size={22} strokeWidth={2} />
           </button>
         </div>
       </div>
@@ -132,15 +135,19 @@ export function ManagePage({ inventory, onBack }) {
                   </div>
                   <button
                     onClick={() => inventory.toggleCategoryActive(cat.id)}
-                    className={`p-2 rounded-lg ${
-                      isActive
-                        ? 'text-gray-700 hover:bg-gray-100'
-                        : 'text-gray-400 hover:bg-gray-200'
-                    }`}
+                    role="switch"
+                    aria-checked={isActive}
                     aria-label={isActive ? 'Desativar' : 'Ativar'}
                     title={isActive ? 'Desativar' : 'Ativar'}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 ${
+                      isActive ? 'bg-green-600' : 'bg-gray-300'
+                    }`}
                   >
-                    {isActive ? <Eye size={20} /> : <EyeOff size={20} />}
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                        isActive ? 'translate-x-5' : 'translate-x-0.5'
+                      }`}
+                    />
                   </button>
                   <button
                     onClick={() => startEdit(cat)}

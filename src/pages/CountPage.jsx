@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronsDown, ChevronsUp } from 'lucide-react'
+import { ChevronsDown, ChevronsUp, Trash2 } from 'lucide-react'
 import { Header } from '../components/Header'
 import { SearchBar } from '../components/SearchBar'
 import { CategoryGroup } from '../components/CategoryGroup'
@@ -46,7 +46,6 @@ export function CountPage({ inventory, onShowReport, onShowManage }) {
     <div className="flex flex-col h-screen bg-gray-100">
       <Header
         totalCount={inventory.totalCount}
-        onClearInventory={handleClear}
         onManage={onShowManage}
       />
 
@@ -107,14 +106,24 @@ export function CountPage({ inventory, onShowReport, onShowManage }) {
         )}
       </div>
 
-      {/* Fixed footer button - Report */}
+      {/* Fixed footer - Report + Clear */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 p-4 shadow-lg">
-        <button
-          onClick={onShowReport}
-          className="w-full px-4 py-3 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-900 transition-colors"
-        >
-          Gerar Relatório
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onShowReport}
+            className="flex-1 px-4 py-3 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-900 transition-colors"
+          >
+            Gerar Relatório
+          </button>
+          <button
+            onClick={handleClear}
+            className="px-4 py-3 bg-red-800 hover:bg-red-700 text-red-100 rounded-lg transition-colors"
+            aria-label="Limpar inventário"
+            title="Limpar inventário"
+          >
+            <Trash2 size={22} strokeWidth={2} />
+          </button>
+        </div>
       </div>
 
       {/* Confirm Modal */}

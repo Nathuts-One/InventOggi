@@ -1,8 +1,8 @@
-import { Trash2, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useWeather } from '../hooks/useWeather'
 import { WeatherIcon } from './WeatherIcon'
 
-export function Header({ totalCount, onClearInventory, onManage }) {
+export function Header({ totalCount, onManage }) {
   const weather = useWeather()
 
   return (
@@ -20,32 +20,19 @@ export function Header({ totalCount, onClearInventory, onManage }) {
         <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Total de itens</p>
         <p className="text-5xl font-bold">{totalCount}</p>
       </div>
-      <div className="absolute top-6 right-4 flex items-start gap-2">
-        {onManage && (
-          <div className="flex flex-col items-center">
-            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Gerenciar</p>
-            <button
-              onClick={onManage}
-              className="p-2 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded-lg transition-colors"
-              aria-label="Gerenciar"
-              title="Gerenciar"
-            >
-              <Settings size={22} strokeWidth={2} />
-            </button>
-          </div>
-        )}
-        <div className="flex flex-col items-center">
-          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Limpar</p>
+      {onManage && (
+        <div className="absolute top-6 right-4 flex flex-col items-center">
+          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Gerenciar</p>
           <button
-            onClick={onClearInventory}
-            className="p-2 bg-red-800 hover:bg-red-700 text-red-100 rounded-lg transition-colors"
-            aria-label="Limpar inventário"
-            title="Limpar inventário"
+            onClick={onManage}
+            className="p-2 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded-lg transition-colors"
+            aria-label="Gerenciar"
+            title="Gerenciar"
           >
-            <Trash2 size={22} strokeWidth={2} />
+            <Settings size={22} strokeWidth={2} />
           </button>
         </div>
-      </div>
+      )}
     </header>
   )
 }
