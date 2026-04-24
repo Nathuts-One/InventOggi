@@ -15,14 +15,21 @@ async function fetchForecast({ latitude, longitude }) {
 
 export function useWeather() {
   const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
+    function finish(d) {
+      if (cancelled) return
+      if (d) setData(d)
+      setLoading(false)
+    }
+
     function loadFallback() {
       fetchForecast(FALLBACK)
-        .then(d => { if (!cancelled) setData(d) })
-        .catch(() => {})
+        .then(d => finish(d))
+        .catch(() => finish(null))
     }
 
     if (!navigator.geolocation) {
@@ -34,7 +41,7 @@ export function useWeather() {
       async (pos) => {
         try {
           const d = await fetchForecast(pos.coords)
-          if (!cancelled) setData(d)
+          finish(d)
         } catch {
           loadFallback()
         }
@@ -46,5 +53,5 @@ export function useWeather() {
     return () => { cancelled = true }
   }, [])
 
-  return data
+  return { data, loading }
 }

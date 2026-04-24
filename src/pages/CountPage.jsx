@@ -47,6 +47,7 @@ export function CountPage({ inventory, onShowReport, onShowManage }) {
       <Header
         totalCount={inventory.totalCount}
         onManage={onShowManage}
+        isLoading={inventory.isLoading}
       />
 
       <SearchBar
@@ -86,7 +87,9 @@ export function CountPage({ inventory, onShowReport, onShowManage }) {
 
       {/* Products list */}
       <div className="flex-1 overflow-y-auto pb-20">
-        {inventory.visibleCategories.length === 0 ? (
+        {inventory.isLoading ? (
+          <CategorySkeletonList />
+        ) : inventory.visibleCategories.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500 text-lg">Nenhum produto encontrado</p>
           </div>
@@ -134,6 +137,19 @@ export function CountPage({ inventory, onShowReport, onShowManage }) {
         onConfirm={confirmClear}
         onCancel={cancelClear}
       />
+    </div>
+  )
+}
+
+function CategorySkeletonList() {
+  return (
+    <div>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="border-b border-gray-300 bg-white p-4 flex items-center justify-between">
+          <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
+          <div className="h-6 w-10 bg-gray-200 rounded-full animate-pulse" />
+        </div>
+      ))}
     </div>
   )
 }

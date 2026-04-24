@@ -9,6 +9,7 @@ export function useInventory() {
   const [types, setTypes] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTypes, setSelectedTypes] = useState(null) // null = all selected
+  const [isLoading, setIsLoading] = useState(true)
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -34,6 +35,7 @@ export function useInventory() {
     } else {
       loadDefault()
     }
+    setIsLoading(false)
   }, [])
 
   // Save to localStorage whenever data changes
@@ -254,6 +256,7 @@ export function useInventory() {
   const allKnownTypes = types.map(t => t.name).sort()
 
   return {
+    isLoading,
     categories,
     activeCategories,
     products,
