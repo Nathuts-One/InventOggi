@@ -4,6 +4,7 @@ import { CountPage } from './pages/CountPage'
 import { ReportPage } from './pages/ReportPage'
 import { ManagePage } from './pages/ManagePage'
 import { ManageProductsPage } from './pages/ManageProductsPage'
+import { ManageTypesPage } from './pages/ManageTypesPage'
 import { MenuSheet } from './components/MenuSheet'
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
     setMenuOpen(false)
     if (option === 'categories') setCurrentPage('manage-categories')
     if (option === 'products') setCurrentPage('manage-products')
+    if (option === 'types') setCurrentPage('manage-types')
   }
 
   return (
@@ -40,6 +42,12 @@ export default function App() {
       )}
       {currentPage === 'manage-products' && (
         <ManageProductsPage
+          inventory={inventory}
+          onBack={() => setCurrentPage('count')}
+        />
+      )}
+      {currentPage === 'manage-types' && (
+        <ManageTypesPage
           inventory={inventory}
           onBack={() => setCurrentPage('count')}
         />

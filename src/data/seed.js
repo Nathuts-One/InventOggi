@@ -1,4 +1,13 @@
 export const initialData = {
+  types: [
+    { id: 1, name: 'Pote 180ml' },
+    { id: 2, name: 'Picolé' },
+    { id: 3, name: 'Cone' },
+    { id: 4, name: 'Pote 2L' },
+    { id: 5, name: 'Pote 1,5L' },
+    { id: 6, name: 'Bombom' },
+    { id: 7, name: 'Copo' },
+  ],
   categories: [
     { id: 1, name: 'Açai', active: true },
     { id: 2, name: 'Clássicos', active: true },

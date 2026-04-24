@@ -6,6 +6,7 @@ const STORAGE_KEY = 'inventory-flow-data-v6'
 export function useInventory() {
   const [categories, setCategories] = useState([])
   const [products, setProducts] = useState([])
+  const [types, setTypes] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTypes, setSelectedTypes] = useState(null) // null = all selected
 
@@ -18,8 +19,15 @@ export function useInventory() {
         // Migration: ensure every category and product has `active` (default true)
         const migratedCategories = data.categories.map(c => ({ active: true, ...c }))
         const migratedProducts = data.products.map(p => ({ active: true, ...p }))
+        // Migration: if no types array, derive from product types
+        let migratedTypes = data.types
+        if (!migratedTypes) {
+          const unique = [...new Set(migratedProducts.map(p => p.type).filter(Boolean))]
+          migratedTypes = unique.map((name, i) => ({ id: i + 1, name }))
+        }
         setCategories(migratedCategories)
         setProducts(migratedProducts)
+        setTypes(migratedTypes)
       } catch {
         loadDefault()
       }
@@ -30,14 +38,18 @@ export function useInventory() {
 
   // Save to localStorage whenever data changes
   useEffect(() => {
-    if (categories.length > 0 || products.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ categories, products }))
+    if (categories.length > 0 || products.length > 0 || types.length > 0) {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ categories, products, types })
+      )
     }
-  }, [categories, products])
+  }, [categories, products, types])
 
   function loadDefault() {
     setCategories([...initialData.categories])
     setProducts([...initialData.products])
+    setTypes([...initialData.types])
   }
 
   function incrementProduct(productId) {
@@ -65,6 +77,7 @@ export function useInventory() {
     const resetProducts = initialData.products.map(p => ({ ...p, count: 0 }))
     setProducts(resetProducts)
     setCategories([...initialData.categories])
+    setTypes([...initialData.types])
   }
 
   function addCategory(name) {
@@ -89,20 +102,45 @@ export function useInventory() {
     setProducts(products.filter(p => p.categoryId !== id))
   }
 
+  // Ensure a type with the given name exists; returns the name (trimmed).
+  // Auto-creates the type entry if it's new. Returns '' for empty input.
+  function ensureType(name, currentTypes = types) {
+    const trimmed = (name || '').trim()
+    if (!trimmed) return { name: '', nextTypes: currentTypes }
+    const exists = currentTypes.some(
+      t => t.name.toLowerCase() === trimmed.toLowerCase()
+    )
+    if (exists) return { name: trimmed, nextTypes: currentTypes }
+    const newId = Math.max(...currentTypes.map(t => t.id), 0) + 1
+    return {
+      name: trimmed,
+      nextTypes: [...currentTypes, { id: newId, name: trimmed }],
+    }
+  }
+
   function addProduct(name, categoryId, type = '') {
+    const { name: typeName, nextTypes } = ensureType(type)
+    if (nextTypes !== types) setTypes(nextTypes)
     const newId = Math.max(...products.map(p => p.id), 0) + 1
     const product = { id: newId, name, categoryId, count: 0, active: true }
-    if (type) product.type = type
+    if (typeName) product.type = typeName
     setProducts([...products, product])
   }
 
   function updateProduct(id, updates) {
+    let nextTypes = types
+    const applied = { ...updates }
+    if ('type' in updates) {
+      const result = ensureType(updates.type, types)
+      nextTypes = result.nextTypes
+      applied.type = result.name
+    }
+    if (nextTypes !== types) setTypes(nextTypes)
     setProducts(
       products.map(p => {
         if (p.id !== id) return p
-        const next = { ...p, ...updates }
-        // Empty string type means "no type"
-        if ('type' in updates && !updates.type) delete next.type
+        const next = { ...p, ...applied }
+        if ('type' in applied && !applied.type) delete next.type
         return next
       })
     )
@@ -120,6 +158,41 @@ export function useInventory() {
     setProducts(products.filter(p => p.id !== id))
   }
 
+  function addType(name) {
+    const trimmed = (name || '').trim()
+    if (!trimmed) return
+    if (types.some(t => t.name.toLowerCase() === trimmed.toLowerCase())) return
+    const newId = Math.max(...types.map(t => t.id), 0) + 1
+    setTypes([...types, { id: newId, name: trimmed }])
+  }
+
+  function updateType(id, name) {
+    const trimmed = (name || '').trim()
+    if (!trimmed) return
+    const current = types.find(t => t.id === id)
+    if (!current) return
+    const oldName = current.name
+    setTypes(types.map(t => (t.id === id ? { ...t, name: trimmed } : t)))
+    // Cascade rename on products
+    setProducts(
+      products.map(p => (p.type === oldName ? { ...p, type: trimmed } : p))
+    )
+  }
+
+  function deleteType(id) {
+    const target = types.find(t => t.id === id)
+    if (!target) return
+    setTypes(types.filter(t => t.id !== id))
+    // Cascade: clear `type` on products that used this type
+    setProducts(
+      products.map(p => {
+        if (p.type !== target.name) return p
+        const { type, ...rest } = p
+        return rest
+      })
+    )
+  }
+
   // Active categories only — drive what's visible in Count/Report
   const activeCategories = categories.filter(c => c.active !== false)
   const activeCategoryIds = new Set(activeCategories.map(c => c.id))
@@ -129,7 +202,7 @@ export function useInventory() {
     p => activeCategoryIds.has(p.categoryId) && p.active !== false
   )
 
-  // Types are derived from visible products only
+  // Types visible in the CountPage filter — derived from visible products
   const allTypes = [...new Set(visibleProducts.map(p => p.type).filter(Boolean))].sort()
 
   // Effective selected types: if null (default), all are selected
@@ -174,8 +247,11 @@ export function useInventory() {
   const productsByCategory = (id) =>
     products.filter(p => p.categoryId === id)
 
-  // All types defined across all products (for datalist suggestions in Manage)
-  const allKnownTypes = [...new Set(products.map(p => p.type).filter(Boolean))].sort()
+  const productCountByType = (typeName) =>
+    products.filter(p => p.type === typeName).length
+
+  // All known type names — sourced from the types entity now
+  const allKnownTypes = types.map(t => t.name).sort()
 
   return {
     categories,
@@ -184,6 +260,7 @@ export function useInventory() {
     visibleProducts,
     filteredProducts,
     visibleCategories,
+    types,
     searchTerm,
     setSearchTerm,
     allTypes,
@@ -205,8 +282,12 @@ export function useInventory() {
     updateProduct,
     toggleProductActive,
     deleteProduct,
+    addType,
+    updateType,
+    deleteType,
     loadDefault,
     productCountByCategory,
     productsByCategory,
+    productCountByType,
   }
 }

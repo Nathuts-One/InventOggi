@@ -108,29 +108,27 @@ export function ManageProductsPage({ inventory, onBack }) {
             <Plus size={22} strokeWidth={2} />
           </button>
         </div>
-        <div className="flex gap-2">
-          <select
-            value={newCategoryId}
-            onChange={e => setNewCategoryId(e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500 text-sm bg-white"
-          >
-            <option value="">Selecione a categoria...</option>
-            {inventory.categories.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            value={newType}
-            onChange={e => setNewType(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            list={datalistId}
-            placeholder="Tipo (opcional)"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500 text-sm"
-          />
-        </div>
+        <select
+          value={newCategoryId}
+          onChange={e => setNewCategoryId(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500 text-sm bg-white"
+        >
+          <option value="">Selecione a categoria...</option>
+          {inventory.categories.map(c => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          value={newType}
+          onChange={e => setNewType(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          list={datalistId}
+          placeholder="Tipo (opcional)"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500 text-sm"
+        />
         <datalist id={datalistId}>
           {typeSuggestions.map(t => (
             <option key={t} value={t} />

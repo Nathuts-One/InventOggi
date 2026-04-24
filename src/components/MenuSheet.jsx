@@ -6,7 +6,7 @@ export function MenuSheet({ isOpen, onClose, onSelect }) {
   const options = [
     { id: 'categories', label: 'Categorias', icon: FolderOpen, enabled: true },
     { id: 'products', label: 'Produtos', icon: Package, enabled: true },
-    { id: 'types', label: 'Tipos', icon: Tag, enabled: false, hint: 'Em breve' },
+    { id: 'types', label: 'Tipos', icon: Tag, enabled: true },
   ]
 
   return (
