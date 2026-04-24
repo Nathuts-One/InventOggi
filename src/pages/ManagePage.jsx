@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Check, X, ArrowLeft } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
 import { ConfirmModal } from '../components/ConfirmModal'
 
-export function ManagePage({ inventory, onBack }) {
+export function ManagePage({ inventory }) {
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editingName, setEditingName] = useState('')
@@ -42,23 +42,9 @@ export function ManagePage({ inventory, onBack }) {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gray-800 text-white p-4 shadow-md flex items-center">
-        <button
-          onClick={onBack}
-          className="p-2 text-gray-100 hover:bg-gray-700 rounded-lg transition-colors"
-          aria-label="Voltar"
-          title="Voltar"
-        >
-          <ArrowLeft size={22} strokeWidth={2} />
-        </button>
-        <h1 className="flex-1 text-center text-xl font-bold">Gerenciar Categorias</h1>
-        <div className="w-10" />
-      </header>
-
+    <div className="flex flex-col">
       {/* Add new */}
-      <div className="bg-white border-b border-gray-200 p-4">
+      <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-10">
         <div className="flex gap-2">
           <input
             type="text"
@@ -81,7 +67,7 @@ export function ManagePage({ inventory, onBack }) {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="p-4 space-y-2">
         {inventory.categories.map(cat => {
           const isActive = cat.active !== false
           const isEditing = editingId === cat.id
@@ -170,7 +156,6 @@ export function ManagePage({ inventory, onBack }) {
         })}
       </div>
 
-      {/* Delete confirmation */}
       <ConfirmModal
         isOpen={deleteTarget !== null}
         title="Excluir categoria"

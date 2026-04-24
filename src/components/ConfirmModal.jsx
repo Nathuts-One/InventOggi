@@ -14,7 +14,7 @@ export function ConfirmModal({
     : 'bg-gray-800 text-white hover:bg-gray-900'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-3">{title}</h2>
         <p className="text-gray-700 mb-6">{message}</p>
