@@ -1,18 +1,26 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, ArrowLeft } from 'lucide-react'
 import { ConfirmModal } from '../components/ConfirmModal'
+import { BottomSheet } from '../components/BottomSheet'
 
-export function ManagePage({ inventory }) {
-  const [newName, setNewName] = useState('')
+export function ManagePage({ inventory, onBack }) {
   const [editingId, setEditingId] = useState(null)
   const [editingName, setEditingName] = useState('')
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [addOpen, setAddOpen] = useState(false)
+  const [newName, setNewName] = useState('')
+
+  function openAdd() {
+    setNewName('')
+    setAddOpen(true)
+  }
 
   function handleAdd() {
     const name = newName.trim()
     if (!name) return
     inventory.addCategory(name)
     setNewName('')
+    setAddOpen(false)
   }
 
   function startEdit(cat) {
@@ -42,32 +50,30 @@ export function ManagePage({ inventory }) {
   }
 
   return (
-    <div className="flex flex-col">
-      {/* Add new */}
-      <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-10">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            placeholder="Nova categoria..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500"
-          />
-          <button
-            onClick={handleAdd}
-            disabled={!newName.trim()}
-            className="p-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:bg-gray-400 transition-colors"
-            aria-label="Adicionar"
-            title="Adicionar"
-          >
-            <Plus size={22} strokeWidth={2} />
-          </button>
-        </div>
-      </div>
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-gray-800 text-white p-4 shadow-md flex items-center">
+        <button
+          onClick={onBack}
+          className="p-2 text-gray-100 hover:bg-gray-700 rounded-lg transition-colors"
+          aria-label="Voltar"
+          title="Voltar"
+        >
+          <ArrowLeft size={22} strokeWidth={2} />
+        </button>
+        <h1 className="flex-1 text-center text-xl font-bold">Gerenciar Categorias</h1>
+        <button
+          onClick={openAdd}
+          className="p-2 text-gray-100 hover:bg-gray-700 rounded-lg transition-colors"
+          aria-label="Adicionar"
+          title="Adicionar"
+        >
+          <Plus size={22} strokeWidth={2} />
+        </button>
+      </header>
 
       {/* List */}
-      <div className="p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {inventory.categories.map(cat => {
           const isActive = cat.active !== false
           const isEditing = editingId === cat.id
@@ -155,6 +161,40 @@ export function ManagePage({ inventory }) {
           )
         })}
       </div>
+
+      {/* Add form sheet */}
+      <BottomSheet
+        isOpen={addOpen}
+        onClose={() => setAddOpen(false)}
+        title="Nova categoria"
+      >
+        <div className="p-4 space-y-4">
+          <input
+            type="text"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAdd()}
+            placeholder="Nome da categoria"
+            autoFocus
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500"
+          />
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => setAddOpen(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleAdd}
+              disabled={!newName.trim()}
+              className="px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-900 disabled:bg-gray-400 transition-colors"
+            >
+              Adicionar
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
 
       <ConfirmModal
         isOpen={deleteTarget !== null}

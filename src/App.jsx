@@ -6,21 +6,17 @@ import { ManagePage } from './pages/ManagePage'
 import { ManageProductsPage } from './pages/ManageProductsPage'
 import { ManageTypesPage } from './pages/ManageTypesPage'
 import { MenuSheet } from './components/MenuSheet'
-import { BottomSheet } from './components/BottomSheet'
 
 export default function App() {
   const inventory = useInventory()
   const [currentPage, setCurrentPage] = useState('count')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [activeSheet, setActiveSheet] = useState(null)
 
   function handleMenuSelect(option) {
     setMenuOpen(false)
-    setActiveSheet(option) // 'categories' | 'products' | 'types'
-  }
-
-  function closeSheet() {
-    setActiveSheet(null)
+    if (option === 'categories') setCurrentPage('manage-categories')
+    if (option === 'products') setCurrentPage('manage-products')
+    if (option === 'types') setCurrentPage('manage-types')
   }
 
   return (
@@ -38,36 +34,30 @@ export default function App() {
           onBackToCount={() => setCurrentPage('count')}
         />
       )}
+      {currentPage === 'manage-categories' && (
+        <ManagePage
+          inventory={inventory}
+          onBack={() => setCurrentPage('count')}
+        />
+      )}
+      {currentPage === 'manage-products' && (
+        <ManageProductsPage
+          inventory={inventory}
+          onBack={() => setCurrentPage('count')}
+        />
+      )}
+      {currentPage === 'manage-types' && (
+        <ManageTypesPage
+          inventory={inventory}
+          onBack={() => setCurrentPage('count')}
+        />
+      )}
 
       <MenuSheet
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}
         onSelect={handleMenuSelect}
       />
-
-      <BottomSheet
-        isOpen={activeSheet === 'categories'}
-        onClose={closeSheet}
-        title="Gerenciar Categorias"
-      >
-        <ManagePage inventory={inventory} />
-      </BottomSheet>
-
-      <BottomSheet
-        isOpen={activeSheet === 'products'}
-        onClose={closeSheet}
-        title="Gerenciar Produtos"
-      >
-        <ManageProductsPage inventory={inventory} />
-      </BottomSheet>
-
-      <BottomSheet
-        isOpen={activeSheet === 'types'}
-        onClose={closeSheet}
-        title="Gerenciar Tipos"
-      >
-        <ManageTypesPage inventory={inventory} />
-      </BottomSheet>
     </div>
   )
 }
